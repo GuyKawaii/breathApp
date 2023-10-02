@@ -1,107 +1,236 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+// Importing required modules and components
+import React, { useState, useRef, useEffect } from "react";
+import { StyleSheet, View, Alert } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import { useState, useRef, useEffect } from "react";
 import * as Location from "expo-location";
 import * as ImagePicker from 'expo-image-picker';
-import { collection, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
-import { useCollection } from 'react-firebase-hooks/firestore';
-import { database, storage } from './firebase';
+import { collection, addDoc, getDocs, updateDoc, doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { database, storage } from './firebase';
+import ImageModal from './ImageModal';
 
 export default function App() {
+  // State Hooks
   const [imagePath, setImagePath] = useState(null);
-
   const [markers, setMarkers] = useState([]);
+  const [selectedMarker, setSelectedMarker] = useState(null);
   const [region, setRegion] = useState({
-    latitude: 0,
-    longitude: 10,
+    latitude: 50,
+    longitude: 12,
     latitudeDelta: 20,
     longitudeDelta: 20,
   });
+  const [isModalVisible, setModalVisible] = useState(false);
 
-  const mapView = useRef(null); // ref. til map view opjectet
-  const locationSubscription = useRef(null); // når vi lukker appen skal den ikke lytte mere
+  // Refs
+  const mapView = useRef(null);
+  const locationSubscription = useRef(null);
 
-  async function launchImagePicker() {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      allowsEditing: true
-    })
-
-    if (!result.canceled) {
-      setImagePath(result.assets[0].uri)
-    }
-  }
-
-
+  // Effect Hook to fetch markers and start listening on mount
   useEffect(() => {
+    // Fetching markers from firestore on component mount
+    fetchMarkers();
+
+    // Function to start location listening
     async function startListening() {
       let { status } = await Location.requestForegroundPermissionsAsync();
+
       if (status !== "granted") {
-        alert("igen adgang til lokation");
+        Alert.alert("No access to location");
         return;
       }
+
       locationSubscription.current = await Location.watchPositionAsync(
-        {
-          distanceInterval: 100,
-          accuracy: Location.Accuracy.High,
-        },
-        (lokation) => {
+        { distanceInterval: 100, accuracy: Location.Accuracy.High },
+        (location) => {
           const newRegion = {
-            latitude: lokation.coords.latitude,
-            longitude: lokation.coords.longitude,
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
             latitudeDelta: 20,
             longitudeDelta: 20,
           };
-          setRegion(newRegion); // flytter kortet til den nye lokation
-          if (mapView.current) {
-            mapView.current.animateToRegion(newRegion);
-          }
-        });
-    }
-    startListening();
-    return () => {
-      if (locationSubscription.current) {
-        locationSubscription.current.remove();
-      }
+          setRegion(newRegion);
+          if (mapView.current) mapView.current.animateToRegion(newRegion);
+        }
+      );
     }
 
-  },[]);
+    startListening(); // Uncommented to start location listening on mount
 
-  function addMarker(data) {
+    // Cleanup location subscription on unmount
+    return () => locationSubscription.current?.remove();
+  }, []);
+
+  // Function to upload an image
+  async function uploadImage(path, marker) { // Accept marker as a parameter
+    try {
+      const res = await fetch(path);
+      const blob = await res.blob();
+      const storageRef = ref(storage, `images/${marker.key}.jpg`); // Use marker directly
+      await uploadBytes(storageRef, blob);
+      const url = await getDownloadURL(storageRef);
+      return url;
+    } catch (error) {
+      console.error('Error uploading image: ', error);
+    }
+  }
+
+  // Function to launch image picker
+  async function launchImagePicker() {
+    let result = await ImagePicker.launchImageLibraryAsync({ allowsEditing: false });
+    if (!result.canceled) {
+      console.log('Image successfully picked');
+      console.log('Image path: ', result.assets[0].uri);
+      return result.assets[0].uri;
+    }
+    return null;
+  }
+
+  // Function to launch image picker
+  async function launchImagePicker() {
+    let result = await ImagePicker.launchImageLibraryAsync({ allowsEditing: false });
+    if (!result.canceled) {
+      console.log('Image successfully picked');
+      console.log('Image path: ', result.assets[0].uri);
+      return result.assets[0].uri;
+    }
+    return null;
+  }
+
+  // Function to fetch markers from firestore
+  const fetchMarkers = async () => {
+    const loadedMarkers = await loadMarkers();
+    setMarkers(loadedMarkers);
+  };
+
+  // Function to load markers from firestore
+  const loadMarkers = async () => {
+    try {
+      const markersArray = [];
+      const querySnapshot = await getDocs(collection(database, "location"));
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        markersArray.push({ key: doc.id, title: data.title, coordinate: data.coordinate });
+      });
+
+      return markersArray;
+    } catch (error) {
+      console.error("Error getting documents: ", error);
+      return [];
+    }
+  }
+
+  // Function to handle adding of marker
+  async function addMarker(data) {
     const { latitude, longitude } = data.nativeEvent.coordinate;
-    const newMarker = {
-      coordinate: { latitude, longitude },
-      key: data.timeStamp,
-      title: "Great Place",
-    };
-    setMarkers([...markers, newMarker]);
+
+    const markerExists = markers.some(
+      marker => marker.coordinate.latitude === latitude && marker.coordinate.longitude === longitude
+    );
+
+    if (!markerExists) {
+      const newMarker = { coordinate: { latitude, longitude }, key: data.timeStamp, title: "Great Place" };
+      setMarkers([...markers, newMarker]);
+      await uploadLocation(newMarker);
+    } else {
+      console.log('Marker with the same coordinates already exists.');
+    }
   }
 
-  function onMarkerPressed(text) {
-    launchImagePicker();
-    alert("you pressed " + text);
+  // Function to handle pressing of a marker
+  async function onMarkerPressed(marker) {
+    setSelectedMarker(marker);
+    if (marker.imageUrl) {
+      console.log('Image URL already exists in Firestore');
+      setModalVisible(true);
+      return;
+    }
+
+    const selectedImagePath = await launchImagePicker();
+    console.log('Image path before error: ', selectedImagePath);
+    if (!selectedImagePath) {
+      console.log('Image not picked');
+      return;
+    }
+
+    try {
+      let imageUrl = await uploadImage(selectedImagePath, marker); // Pass marker directly
+      await updateMarkerWithImage(marker, imageUrl);
+      console.log('Image URL successfully added to Firestore');
+      fetchMarkers(); // Update state
+    } catch (error) {
+      console.error('Error in onMarkerPressed: ', error);
+    }
   }
 
+  // updates firestore and locally with image url
+  async function updateMarkerWithImage(marker, imageUrl) {
+    console.log('Updating marker with image...'); // Changed the log message for clarity
+
+    const markerDoc = doc(database, 'location', marker.key);
+    console.log('Marker doc: ', markerDoc);
+
+    try {
+      await updateDoc(markerDoc, { imageUrl });
+      console.log('Image URL successfully added to Firestore');
+    } catch (error) {
+      console.error('Error updating document: ', error);
+      return; // Return immediately if there is an error
+    }
+
+    console.log('Marker successfully updated with image'); // Changed the log message for clarity
+  }
+
+  // Function to close modal
+  const closeModal = () => {
+    setModalVisible(false);
+  }
+
+
+
+
+  // Function to upload a marker to firestore
+  const uploadLocation = async (marker) => {
+    if (!marker) return;
+    try {
+      await setDoc(doc(database, "location", String(marker.key)), {
+        title: marker.title,
+        coordinate: marker.coordinate,
+        key: marker.key,
+      });
+      console.log('Document successfully added!');
+    } catch (error) {
+      console.error("Error adding document: ", error);
+    }
+  }
+
+  // Rendering component
   return (
     <View style={styles.container}>
       <MapView style={styles.map} region={region} onLongPress={addMarker}>
-        {markers.map((marker) => (
+        {markers.map(marker => (
           <Marker
             coordinate={marker.coordinate}
             key={marker.key}
             title={marker.title}
-            onPress={() => onMarkerPressed(marker.title)}
+            onPress={() => onMarkerPressed(marker)}
           />
         ))}
       </MapView>
+      {selectedMarker && isModalVisible && (
+        <ImageModal
+          visible={isModalVisible}
+          imageUrl={selectedMarker.imageUrl}
+          onClose={closeModal}
+        />
+      )}
     </View>
   );
 }
 
+// Styling
 const styles = StyleSheet.create({
-  map: {
-    width: "100%",
-    height: "100%",
-  },
+  container: { flex: 1 },
+  map: { width: "100%", height: "100%" },
 });
