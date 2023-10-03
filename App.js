@@ -79,19 +79,6 @@ export default function App() {
   async function launchImagePicker() {
     let result = await ImagePicker.launchImageLibraryAsync({ allowsEditing: false });
     if (!result.canceled) {
-      console.log('Image successfully picked');
-      console.log('Image path: ', result.assets[0].uri);
-      return result.assets[0].uri;
-    }
-    return null;
-  }
-
-  // Function to launch image picker
-  async function launchImagePicker() {
-    let result = await ImagePicker.launchImageLibraryAsync({ allowsEditing: false });
-    if (!result.canceled) {
-      console.log('Image successfully picked');
-      console.log('Image path: ', result.assets[0].uri);
       return result.assets[0].uri;
     }
     return null;
@@ -155,13 +142,11 @@ export default function App() {
   async function onMarkerPressed(marker) {
     setSelectedMarker(marker);
     if (marker.imageUrl) {
-      console.log('Image URL already exists in Firestore');
       setModalVisible(true);
       return;
     }
 
     const selectedImagePath = await launchImagePicker();
-    console.log('Image path before error: ', selectedImagePath);
     if (!selectedImagePath) {
       console.log('Image not picked');
       return;
@@ -170,7 +155,6 @@ export default function App() {
     try {
       let imageUrl = await uploadImage(selectedImagePath, marker); // Pass marker directly
       await updateMarkerWithImage(marker, imageUrl);
-      console.log('Image URL successfully added to Firestore');
       fetchMarkers(); // Update state
     } catch (error) {
       console.error('Error in onMarkerPressed: ', error);
@@ -179,37 +163,28 @@ export default function App() {
 
   // updates firestore and locally with image url
   async function updateMarkerWithImage(marker, imageUrl) {
-    console.log('Updating marker with image...'); // Changed the log message for clarity
-    console.log(markers);
-
-    const markerDoc = doc(database, 'location', marker.key);
-    console.log('Marker locally: ', marker);
-    console.log('Marker doc: ', markerDoc);
-
     try {
+      // Update Firestore
+      const markerDoc = doc(database, 'location', marker.key);
       await updateDoc(markerDoc, { imageUrl });
+      console.log('Marker updated in Firestore.');
 
-      // Update firestore
-      console.log('Image URL successfully added to Firestore');
+      // Update local state
+      marker.imageUrl = imageUrl;
+      console.log('Local marker updated with image URL.');
 
-      // Update state
-      // marker.imageUrl = imageUrl;
-      console.log('here we are 123');
     } catch (error) {
-      console.error('Error updating document: ', error);
-      return; // Return immediately if there is an error
+      console.error('Error updating marker with image:', error);
+      return;
     }
-
-    console.log('Marker successfully updated with image'); // Changed the log message for clarity
+    // see local state updated
+    console.log(markers);
   }
 
   // Function to close modal
   const closeModal = () => {
     setModalVisible(false);
   }
-
-
-
 
   // Function to upload a marker to firestore
   const uploadLocation = async (marker) => {
