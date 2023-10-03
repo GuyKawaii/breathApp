@@ -5,7 +5,7 @@ import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import * as ImagePicker from 'expo-image-picker';
 import { collection, addDoc, getDocs, updateDoc, doc, setDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { database, storage } from './firebase';
 import ImageModal from './ImageModal';
 
@@ -181,10 +181,7 @@ export default function App() {
     console.log(markers);
   }
 
-  // Function to close modal
-  const closeModal = () => {
-    setModalVisible(false);
-  }
+
 
   // Function to upload a marker to firestore
   const uploadLocation = async (marker) => {
@@ -199,6 +196,26 @@ export default function App() {
     } catch (error) {
       console.error("Error adding document: ", error);
     }
+  }
+
+  // ### ImageModal functions ### passeed to the ImageModal component
+  // Function to handle image change
+  async function handleImageChange(marker) {
+    const selectedImagePath = await launchImagePicker();
+    if (!selectedImagePath) return;
+
+    try {
+      const imageUrl = await uploadImage(selectedImagePath, marker);
+      await updateMarkerWithImage(marker, imageUrl);
+      fetchMarkers();
+    } catch (error) {
+      console.error('Error in handleImageChange:', error);
+    }
+  }
+
+  // Function to close modal
+  const closeModal = () => {
+    setModalVisible(false);
   }
 
   // Rendering component
@@ -219,6 +236,7 @@ export default function App() {
           visible={isModalVisible}
           imageUrl={selectedMarker.imageUrl}
           onClose={closeModal}
+          onChangeImage={() => handleImageChange(selectedMarker)}
         />
       )}
     </View>
