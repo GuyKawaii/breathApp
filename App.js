@@ -111,7 +111,18 @@ export default function App() {
 
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        markersArray.push({ key: doc.id, title: data.title, coordinate: data.coordinate });
+        let marker = {
+          key: doc.id,
+          title: data.title,
+          coordinate: data.coordinate
+        };
+
+        // If imageUrl exists in the data, add it to the marker object
+        if (data.imageUrl) {
+          marker.imageUrl = data.imageUrl;
+        }
+
+        markersArray.push(marker);
       });
 
       return markersArray;
@@ -119,7 +130,7 @@ export default function App() {
       console.error("Error getting documents: ", error);
       return [];
     }
-  }
+  };
 
   // Function to handle adding of marker
   async function addMarker(data) {
@@ -130,12 +141,14 @@ export default function App() {
     );
 
     if (!markerExists) {
-      const newMarker = { coordinate: { latitude, longitude }, key: data.timeStamp, title: "Great Place" };
+      const newMarker = { coordinate: { latitude, longitude }, key: data.timeStamp.toString(), title: "Great Place" };
       setMarkers([...markers, newMarker]);
       await uploadLocation(newMarker);
     } else {
       console.log('Marker with the same coordinates already exists.');
     }
+
+
   }
 
   // Function to handle pressing of a marker
@@ -167,13 +180,21 @@ export default function App() {
   // updates firestore and locally with image url
   async function updateMarkerWithImage(marker, imageUrl) {
     console.log('Updating marker with image...'); // Changed the log message for clarity
+    console.log(markers);
 
     const markerDoc = doc(database, 'location', marker.key);
+    console.log('Marker locally: ', marker);
     console.log('Marker doc: ', markerDoc);
 
     try {
       await updateDoc(markerDoc, { imageUrl });
+
+      // Update firestore
       console.log('Image URL successfully added to Firestore');
+
+      // Update state
+      // marker.imageUrl = imageUrl;
+      console.log('here we are 123');
     } catch (error) {
       console.error('Error updating document: ', error);
       return; // Return immediately if there is an error
