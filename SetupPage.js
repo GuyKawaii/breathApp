@@ -1,148 +1,109 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Button, FlatList, TouchableOpacity } from "react-native";
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
+import DraggableFlatList from 'react-native-draggable-flatlist';
+import { Button } from 'react-native-paper';
 
-function SetupPage({ navigation }) {
-  const [steps, setSteps] = useState([]);
-  const [breathIn, setBreathIn] = useState('1');
-  const [breathOut, setBreathOut] = useState('1');
-  const [holdDuration, setHoldDuration] = useState('30');
-  const [currentInputs, setCurrentInputs] = useState({}); // New state to track current input values
+export default function DraggableList() {
+  const [data, setData] = useState([
+    { key: '1', label: 'Item 1' },
+    { key: '2', label: 'Item 2' },
+    { key: '3', label: 'Item 3' },
+  ]);
 
-  const handleInputChange = (index, key, value) => {
-    // Only track the change locally without updating the main array
-    setCurrentInputs(prev => ({
-      ...prev,
-      [`${index}-${key}`]: value
-    }));
+  const [holdDuration, setNewItemLabel] = useState('');  // New state for input
+
+  const addHold = () => {
+    const newKey = Date.now().toString();  // Generate a unique key using timestamp
+    const newItem = { key: newKey, label: holdDuration, type: 'hold', duration: holdDuration };
+    setData([newItem, ...data]);
+    setNewItemLabel('');
   };
 
-  const handleInputBlur = (index, key) => {
-    let value = currentInputs[`${index}-${key}`];
-    let parsedValue = parseInt(value, 10);
-    if (isNaN(parsedValue)) parsedValue = 0; // Set default value if parsed value is NaN
-
-    let newSteps = [...steps];
-    newSteps[index][key] = parsedValue;
-    setSteps(newSteps);
+  const deleteItemByKey = (key) => {
+    const newData = data.filter(item => item.key !== key);
+    setData(newData);
   };
 
-  const addBreatheStep = () => {
-    setSteps(prev => [...prev, { type: 'breathe', in: parseInt(breathIn, 10), out: parseInt(breathOut, 10) }]);
-  };
-
-  const addQuickStep = () => {
-    setSteps(prev => [...prev, { type: 'quick' }]);
-  };
-
-  const addHoldStep = () => {
-    setSteps(prev => [...prev, { type: 'hold', duration: parseInt(holdDuration, 10) }]);
-  };
-
-  const updateStep = (index, key, value) => {
-    if (value === "") return; // Exit the function if the input is empty
-
-    let parsedValue = parseInt(value, 10);
-    if (isNaN(parsedValue)) parsedValue = 0; // Set default value if parsed value is NaN
-
-    let newSteps = [...steps];
-    newSteps[index][key] = parsedValue;
-    setSteps(newSteps);
-  };
-
-  const deleteStep = (index) => {
-    let newSteps = [...steps];
-    newSteps.splice(index, 1);
-    setSteps(newSteps);
+  const renderItem = ({ item, index, drag, isActive }) => {
+    return (
+      <View style={styles.itemContainer}>
+        <TouchableOpacity
+          style={{
+            flex: 1,
+            height: 50,
+            backgroundColor: isActive ? 'blue' : 'white',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderTopWidth: 1,
+            borderColor: '#ddd',
+          }}
+          onLongPress={drag}
+        >
+          <Text>{item.label}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => deleteItemByKey(item.key)}
+        >
+          <Text style={styles.deleteButtonText}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+    );
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Setup your breath holding</Text>
-
-      {/* Breathe Step */}
-      <Text>Breathe (seconds):</Text>
-      <TextInput
-        placeholder="In"
-        value={breathIn}
-        onChangeText={setBreathIn}
-        keyboardType="numeric"
-        style={{ borderWidth: 1, padding: 8, marginBottom: 10, width: 50 }}
+    <View style={{ flex: 1 }}>
+      <View style={styles.inputContainer}>
+        <TextInput
+          value={holdDuration}
+          onChangeText={setNewItemLabel}
+          placeholder="Enter new item label..."
+          style={styles.input}
+        />
+        <Button onPress={addHold}>Add</Button>
+      </View>
+      <DraggableFlatList
+        data={data}
+        renderItem={renderItem}
+        keyExtractor={(item) => `draggable-item-${item.key}`}
+        onDragEnd={({ data }) => setData(data)}
       />
-      <TextInput
-        placeholder="Out"
-        value={breathOut}
-        onChangeText={setBreathOut}
-        keyboardType="numeric"
-        style={{ borderWidth: 1, padding: 8, marginBottom: 10, width: 50 }}
-      />
-      <Button title="Add Breathe Step" onPress={addBreatheStep} />
-
-      {/* Quick Step */}
-      <Button title="Add Quick Breath" onPress={addQuickStep} />
-
-      {/* Hold Step */}
-      <TextInput
-        placeholder="Hold Duration"
-        value={holdDuration}
-        onChangeText={setHoldDuration}
-        keyboardType="numeric"
-        style={{ borderWidth: 1, padding: 8, marginBottom: 10, width: 100 }}
-      />
-      <Button title="Add Hold Step" onPress={addHoldStep} />
-
-      {/* Show Steps */}
-      <FlatList
-        data={steps}
-        renderItem={({ item, index }) => (
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text>{item.type}</Text>
-            {item.type === 'breathe' && (
-              <>
-                <TextInput
-                  placeholder="In"
-                  value={currentInputs[`${index}-in`] || item.in.toString()}
-                  onChangeText={value => handleInputChange(index, 'in', value)}
-                  onBlur={() => handleInputBlur(index, 'in')}
-                  keyboardType="numeric"
-                  style={{ borderWidth: 1, padding: 8, width: 50 }}
-                />
-                <TextInput
-                  placeholder="Out"
-                  value={currentInputs[`${index}-out`] || item.out.toString()}
-                  onChangeText={value => handleInputChange(index, 'out', value)}
-                  onBlur={() => handleInputBlur(index, 'out')}
-                  keyboardType="numeric"
-                  style={{ borderWidth: 1, padding: 8, width: 50 }}
-                />
-              </>
-            )}
-            {item.type === 'hold' && (
-              <TextInput
-                placeholder="Duration"
-                value={currentInputs[`${index}-duration`] || item.duration.toString()}
-                onChangeText={value => handleInputChange(index, 'duration', value)}
-                onBlur={() => handleInputBlur(index, 'duration')}
-                keyboardType="numeric"
-                style={{ borderWidth: 1, padding: 8, width: 100 }}
-              />
-            )}
-            <Button title="Delete" onPress={() => deleteStep(index)} />
-          </View>
-        )}
-        keyExtractor={(item, index) => index.toString()}
-      />
-
-      {/* Start the sequence */}
-      <Button title="Start" onPress={() => navigateToTimerPage()} />
+      <Button onPress={() => showList()}>console log list</Button>
     </View>
   );
 
-  // split steps and navigate to TimerPage
-  function navigateToTimerPage() {
-    // placeholder for now
-    let steps = [{ type: 'breathe-in', duration: 1 }, { type: 'breathe-out', duration: 3 }, { type: 'quick', duration: 4 }, { type: 'hold', duration: 30 }];
-    navigation.navigate('TimerPage', { steps, reset: true });
+  function showList() {
+    console.log(data);
   }
 }
 
-export default SetupPage;
+const styles = StyleSheet.create({
+  itemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  deleteButton: {
+    backgroundColor: 'red',
+    width: 70,
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteButtonText: {
+    color: 'white',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    padding: 10,
+    alignItems: 'center',
+  },
+  input: {
+    flex: 1,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 5,
+    marginRight: 10,
+  },
+});
+
