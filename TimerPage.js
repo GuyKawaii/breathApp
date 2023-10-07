@@ -11,7 +11,7 @@ function TimerPage({ route, navigation }) {
   async function playSound() {
     const soundObject = new Audio.Sound();
 
-    const step = steps[currentStep];
+    const step = steps[currentStep + 1];
     console.log("Playing sound for step", step);
     try {
       switch (step.type) {
@@ -22,12 +22,12 @@ function TimerPage({ route, navigation }) {
           break;
         case 'breathe-in':
           console.log("Playing breathe sound");
-          await soundObject.loadAsync(require('./assets/sound/breathe.mp3'));
+          await soundObject.loadAsync(require('./assets/sound/breathe-in.mp3'));
           await soundObject.playAsync();
           break;
         case 'breathe-out':
           console.log("Playing breathe sound");
-          await soundObject.loadAsync(require('./assets/sound/breathe.mp3'));
+          await soundObject.loadAsync(require('./assets/sound/breathe-out.mp3'));
           await soundObject.playAsync();
           break;
         case 'quick':
@@ -61,17 +61,17 @@ function TimerPage({ route, navigation }) {
 
     switch (step.type) {
       case 'breathe':
-        return { duration: step.in + step.out, isGrowing: true };
+        return { duration: step.in + step.out, isGrowing: false };
       case 'breathe-in':
-        return { duration: step.duration, isGrowing: true };
+        return { duration: step.duration, isGrowing: false };
       case 'breathe-out':
         return { duration: step.duration, isGrowing: false };
       case 'quick':
-        return { duration: 2, isGrowing: false };
+        return { duration: step.duration, isGrowing: false };
       case 'hold':
         return { duration: step.duration, isGrowing: false };
       default:
-        return { duration: 0, isGrowing: false };
+        return { duration: step.duration, isGrowing: false };
     }
   };
 
