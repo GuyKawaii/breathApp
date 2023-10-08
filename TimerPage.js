@@ -38,16 +38,37 @@ function TimerPage({ route, navigation }) {
         case 'hold':
           soundAsset = require('./assets/sound/hold.mp3');
           break;
+        case 'complete':
+          soundAsset = require('./assets/sound/complete.mp3');
+          break;
         case 'padding':
+          return; // Early return
 
         default:
           console.error("Unknown step type:", step.type);
           return; // Early return
       }
 
+      // unload any previous sound
       if (soundAsset) {
-        await soundObject.unloadAsync();
+        soundObject.setOnPlaybackStatusUpdate((status) => {
+          if (!status.didJustFinish) return;
+          soundObject.unloadAsync();
+        });
+
+        // Load and play the sound
         await soundObject.loadAsync(soundAsset);
+
+        // // Set volume based on the type of sound
+        // switch (step.type) {
+        //   case 'complete':
+        //     await soundObject.setVolumeAsync(1); // 50% volume for 'complete' sound
+        //     break;
+        //   default:
+        //     await soundObject.setVolumeAsync(1);   // 100% volume for other sounds
+        //     break;
+        // }
+
         await soundObject.playAsync();
       } else {
         console.error("Sound asset not found for step type:", step.type);
@@ -57,6 +78,7 @@ function TimerPage({ route, navigation }) {
       console.error("Error loading or playing sound.", error);
     }
   }
+
 
   const computeCurrentStep = () => {
     const step = steps[currentStep];
