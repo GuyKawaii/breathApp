@@ -2,34 +2,35 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import { Button } from 'react-native-paper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function DraggableList({ navigation }) {
   const [steps, setSteps] = useState([
     { key: "1", label: `2 x Breath 1s in, 2s out`, type: 'breathe', in: 1, out: 2, numberOfBreaths: 2 }
   ]);
 
-  const [breathInDuration, setBreathInDuration] = useState('4');
-  const [breathOutDuration, setBreathOutDuration] = useState('6');
-  const [numberOfBreaths, setNumberOfBreaths] = useState('3');
-  const [quickDuration, setQuickDuration] = useState('4');
-  const [holdDuration, setHoldDuration] = useState('30');
+  const [breathInDuration, setBreathInDuration] = useState('1');
+  const [breathOutDuration, setBreathOutDuration] = useState('1');
+  const [numberOfBreaths, setNumberOfBreaths] = useState('1');
+  const [quickDuration, setQuickDuration] = useState('2');
+  const [holdDuration, setHoldDuration] = useState('3');
 
   const addBreath = () => {
     const newKey = Date.now().toString();  // Generate a unique key using timestamp
     const newItem = { key: newKey, label: `${numberOfBreaths} x Breath ${breathInDuration}s in, ${breathOutDuration}s out`, type: 'breathe', in: parseInt(breathInDuration), out: parseInt(breathOutDuration), numberOfBreaths: parseInt(numberOfBreaths) };
-    setSteps([newItem, ...steps]);
+    setSteps([...steps, newItem]);
   }
 
   const addQuick = () => {
     const newKey = Date.now().toString();  // Generate a unique key using timestamp
     const newItem = { key: newKey, label: `Quick ${quickDuration}s`, type: 'quick', duration: parseInt(quickDuration, 10) };
-    setSteps([newItem, ...steps]);
+    setSteps([...steps, newItem]);
   }
 
   const addHold = () => {
     const newKey = Date.now().toString();  // Generate a unique key using timestamp
     const newItem = { key: newKey, label: `Hold ${holdDuration}s`, type: 'hold', duration: parseInt(holdDuration, 10) };
-    setSteps([newItem, ...steps]);
+    setSteps([...steps, newItem]);
   };
 
   const deleteItemByKey = (key) => {
@@ -64,6 +65,29 @@ export default function DraggableList({ navigation }) {
     );
   };
 
+  const saveSteps = async (steps) => {
+    try {
+      await AsyncStorage.setItem('steps', JSON.stringify(steps));
+      alert('Steps saved successfully');
+    } catch (error) {
+      console.error('Error saving steps:', error);
+    }
+  };
+
+  const loadSteps = async () => {
+    try {
+      const loadedSteps = await AsyncStorage.getItem('steps');
+      if (loadedSteps !== null) {
+        setSteps(JSON.parse(loadedSteps));
+      } else {
+        alert('No steps saved previously');
+      }
+    } catch (error) {
+      console.error('Error loading steps:', error);
+    }
+  };
+
+
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.inputContainer}>
@@ -86,6 +110,15 @@ export default function DraggableList({ navigation }) {
           placeholder="seconds for hold"
           style={styles.input}
         />
+        <Text>times: </Text>
+        <TextInput
+          keyboardType="number-pad"
+          TextInput
+          value={numberOfBreaths}
+          onChangeText={setNumberOfBreaths}
+          placeholder="breath"
+          style={styles.input}
+        />
         <Button onPress={addBreath}>Add</Button>
       </View>
 
@@ -94,7 +127,7 @@ export default function DraggableList({ navigation }) {
         <TextInput
           keyboardType="number-pad"
           TextInput
-          value={holdDuration}
+          value={quickDuration}
           onChangeText={setQuickDuration}
           placeholder="seconds for hold"
           style={styles.input}
@@ -123,42 +156,50 @@ export default function DraggableList({ navigation }) {
           onDragEnd={({ data }) => setSteps(data)}
         />
       </View>
-      <Button onPress={() => showList()}>START</Button>
+      {/* // view with flex 1 is to push the button to the bottom */}
+      <View style={styles.horizontalBox}>
+        <Button onPress={() => navigateToTimerPage()}>START</Button>
+        <Button onPress={() => loadSteps()}>LOAD</Button>
+        <Button onPress={() => saveSteps(steps)}>SAVE</Button>
+      </View>
     </View>
   );
 
-  function showList() {
+  function navigateToTimerPage() {
+    if (steps.length === 0) {
+      alert('Add at least one step');
+      return;
+    }
+
     let splitSteps = [];
 
     // padding step
     splitSteps.push({ "type": "padding", "duration": 1 });
 
     steps.forEach(step => {
-      if (step.type === 'breathe') {
-        for (let i = 0; i < step.numberOfBreaths; i++) {
-          splitSteps.push({ "type": "breathe-in", "duration": step.in });
-          splitSteps.push({ "type": "breathe-out", "duration": step.out });
-        }
-      } else {
-        splitSteps.push(step);
+      switch (step.type) {
+        case 'breathe':
+          for (let i = 0; i < step.numberOfBreaths; i++) {
+            splitSteps.push({ "type": "breathe-in", "duration": step.in });
+            splitSteps.push({ "type": "breathe-out", "duration": step.out });
+          }
+          break;
+        case 'quick':
+          splitSteps.push({ "type": "quick-in", "duration": step.duration / 2 });
+          splitSteps.push({ "type": "quick-out", "duration": step.duration / 2 });
+          break;
+        default:
+          splitSteps.push(step);
+          break;
       }
     });
+
+    console.log(splitSteps);
 
     // padding step
     splitSteps.push({ "type": "breathe-out", "duration": 1 });
 
-    console.log(steps);
-    console.log(splitSteps);
-
-    navigation.navigate('TimerPage', { steps: splitSteps, reset: true });
-  }
-
-  function navigateToTimerPage() {
-    if (steps.length > 0) {
-      navigation.navigate('TimerPage', { steps, reset: true });
-    } else {
-      alert('Please add breaths');
-    }
+    navigation.navigate('TimerPage', { steps: splitSteps, allowed: true });
   }
 }
 
@@ -166,6 +207,12 @@ const styles = StyleSheet.create({
   itemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  horizontalBox: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
   },
   deleteButton: {
     backgroundColor: 'red',

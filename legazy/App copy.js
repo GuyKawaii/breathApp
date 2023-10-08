@@ -6,7 +6,7 @@ import * as Location from "expo-location";
 import * as ImagePicker from 'expo-image-picker';
 import { collection, addDoc, getDocs, updateDoc, doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { database, storage } from './firebase';
+import { database, storage } from '../firebase';
 import ImageModal from './ImageModal';
 
 export default function App() {

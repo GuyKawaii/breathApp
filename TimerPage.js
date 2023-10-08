@@ -8,74 +8,71 @@ function TimerPage({ route, navigation }) {
   const [isPlaying, setIsPlaying] = useState(true);
   const { steps, reset } = route.params;
 
+  const soundObject = new Audio.Sound();
   async function playSound() {
-    const soundObject = new Audio.Sound();
-
     const step = steps[currentStep + 1];
+
+    if (step === undefined) {
+      return;
+    }
+
     console.log("Playing sound for step", step);
+    console.log(step.type);
+
+    let soundAsset;
+
     try {
       switch (step.type) {
-        case 'breathe':
-          console.log("Playing breathe sound");
-          await soundObject.loadAsync(require('./assets/sound/breathe.mp3'));
-          await soundObject.playAsync();
-          break;
         case 'breathe-in':
-          console.log("Playing breathe sound");
-          await soundObject.loadAsync(require('./assets/sound/breathe-in.mp3'));
-          await soundObject.playAsync();
+          soundAsset = require('./assets/sound/breathe-in.mp3');
           break;
         case 'breathe-out':
-          console.log("Playing breathe sound");
-          await soundObject.loadAsync(require('./assets/sound/breathe-out.mp3'));
-          await soundObject.playAsync();
+          soundAsset = require('./assets/sound/breathe-out.mp3');
           break;
-        case 'quick':
-          console.log("Playing quick sound");
-          await soundObject.loadAsync(require('./assets/sound/quick.mp3'));
-          await soundObject.playAsync();
+        case 'quick-in':
+          soundAsset = require('./assets/sound/quick-in.mp3');
+          break;
+        case 'quick-out':
+          soundAsset = require('./assets/sound/quick-out.mp3');
           break;
         case 'hold':
-          console.log("Playing hold sound");
-          await soundObject.loadAsync(require('./assets/sound/hold.mp3'));
-          await soundObject.playAsync();
+          soundAsset = require('./assets/sound/hold.mp3');
           break;
+        case 'padding':
+
         default:
-          break;
+          console.error("Unknown step type:", step.type);
+          return; // Early return
       }
+
+      if (soundAsset) {
+        await soundObject.unloadAsync();
+        await soundObject.loadAsync(soundAsset);
+        await soundObject.playAsync();
+      } else {
+        console.error("Sound asset not found for step type:", step.type);
+      }
+
     } catch (error) {
-      console.log("Error loading or playing sound.", error);
+      console.error("Error loading or playing sound.", error);
     }
   }
-
-
-  useEffect(() => {
-    if (reset) {
-      setCurrentStep(0);
-      setIsPlaying(true);
-    }
-  }, [reset]);
 
   const computeCurrentStep = () => {
     const step = steps[currentStep];
 
+    // TODO: Add special case for each step type
     switch (step.type) {
-      case 'breathe':
-        return { duration: step.in + step.out, isGrowing: false };
-      case 'breathe-in':
-        return { duration: step.duration, isGrowing: false };
-      case 'breathe-out':
-        return { duration: step.duration, isGrowing: false };
-      case 'quick':
-        return { duration: step.duration, isGrowing: false };
-      case 'hold':
-        return { duration: step.duration, isGrowing: false };
       default:
-        return { duration: step.duration, isGrowing: false };
+        return {
+          duration: step.duration,
+          color: ["blue"],
+          colorsTime: [0],
+        };
     }
   };
 
-  const { duration, isGrowing } = computeCurrentStep();
+  const { duration, color, colorsTime } = computeCurrentStep();
 
   const handleComplete = () => {
     playSound(currentStep);
@@ -95,11 +92,10 @@ function TimerPage({ route, navigation }) {
         key={currentStep}  // Reset timer when changing step
         isPlaying={isPlaying}
         duration={duration}
-        colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
-        colorsTime={[10, 6, 3, 0]}
+        colors={color}
+        colorsTime={colorsTime}
         onComplete={handleComplete}
         updateInterval={0}
-        isGrowing={isGrowing}
       >
         {({ remainingTime, color }) => (
           <Text style={{ color, fontSize: 40 }}>
