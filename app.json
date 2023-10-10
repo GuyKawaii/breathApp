@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "map",
-    "slug": "map",
+    "name": "breath",
+    "slug": "breath",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
