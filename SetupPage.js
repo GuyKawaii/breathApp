@@ -3,8 +3,9 @@ import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-nativ
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import { Button } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAudio } from './AudioContext';
 
-export default function DraggableList({ navigation }) {
+export default function SetupPage({ navigation }) {
   const [steps, setSteps] = useState([
     { key: "1", label: `2 x Breath 1s in, 2s out`, type: 'breathe', in: 1, out: 2, numberOfBreaths: 2 }
   ]);
@@ -14,6 +15,7 @@ export default function DraggableList({ navigation }) {
   const [numberOfBreaths, setNumberOfBreaths] = useState('1');
   const [quickDuration, setQuickDuration] = useState('2');
   const [holdDuration, setHoldDuration] = useState('3');
+  const { isPlaying, togglePlayback } = useAudio();
 
   const addBreath = () => {
     const newKey = Date.now().toString();  // Generate a unique key using timestamp
@@ -161,6 +163,9 @@ export default function DraggableList({ navigation }) {
         <Button onPress={() => navigateToTimerPage()}>START</Button>
         <Button onPress={() => loadSteps()}>LOAD</Button>
         <Button onPress={() => saveSteps(steps)}>SAVE</Button>
+        <Button onPress={togglePlayback}>
+          {isPlaying ? "Pause Music" : "Play Music"}
+        </Button>
       </View>
     </View>
   );
