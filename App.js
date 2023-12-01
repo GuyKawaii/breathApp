@@ -4,7 +4,9 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from '@expo/vector-icons';
 import { AudioProvider } from './AudioContext';
+import { LoginProvider } from './LoginContext';
 
+import LoginPage from './LoginPage';
 import SetupPage from "./SetupPage";
 import TimerPage from "./TimerPage";
 import AudioPage from "./AudioPage";
@@ -15,36 +17,39 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <NavigationContainer>
-        <AudioProvider>
-          <Tab.Navigator
-            screenOptions={({ route }) => ({
-              tabBarIcon: ({ focused, color, size }) => {
-                let iconName;
+        <LoginProvider>
+          <AudioProvider>
+            <Tab.Navigator
+              screenOptions={({ route }) => ({
+                tabBarIcon: ({ focused, color, size }) => {
+                  let iconName;
 
-                if (route.name === 'SetupPage') {
-                  iconName = focused ? 'ios-settings' : 'ios-settings-outline';
-                } else if (route.name === 'TimerPage') {
-                  iconName = focused ? 'ios-timer' : 'ios-timer-outline';
-                }
+                  if (route.name === 'SetupPage') {
+                    iconName = focused ? 'ios-settings' : 'ios-settings-outline';
+                  } else if (route.name === 'TimerPage') {
+                    iconName = focused ? 'ios-timer' : 'ios-timer-outline';
+                  }
 
-                return <Ionicons name={iconName} size={size} color={color} />;
-              },
-              tabBarInactiveTintColor: 'gray',
-              tabBarActiveTintColor: 'tomato',
-            })}
-          >
-            <Tab.Screen name="SetupPage" component={SetupPage} />
-            <Tab.Screen name="AudioPage" component={AudioPage} />
-            <Tab.Screen
-              name="TimerPage"
-              component={TimerPage}
-              options={{
-                unmountOnBlur: true,
-                tabBarButton: () => null   // Disable the button press but tab is still visible
-              }}
-            />
-          </Tab.Navigator>
-        </AudioProvider>
+                  return <Ionicons name={iconName} size={size} color={color} />;
+                },
+                tabBarInactiveTintColor: 'gray',
+                tabBarActiveTintColor: 'tomato',
+              })}
+            >
+              <Tab.Screen name="SetupPage" component={SetupPage} />
+              <Tab.Screen name="AudioPage" component={AudioPage} />
+              <Tab.Screen name="LoginPage" component={LoginPage} />
+              <Tab.Screen
+                name="TimerPage"
+                component={TimerPage}
+                options={{
+                  unmountOnBlur: true,
+                  tabBarButton: () => null   // Disable the button press but tab is still visible
+                }}
+              />
+            </Tab.Navigator>
+          </AudioProvider>
+        </LoginProvider>
       </NavigationContainer>
     </GestureHandlerRootView>
   );
