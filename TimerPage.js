@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { View, Text, StyleSheet, Button, Pressable } from "react-native";
 import { CountdownCircleTimer } from "react-native-countdown-circle-timer";
 import { Audio } from 'expo-av';
 import { useAudio } from './AudioContext';
 import Slider from '@react-native-community/slider';
+import { saveSessionBreathHolds, loadSessionBreathHolds } from './FirebaseFuntions';
+import LoginContext from './LoginContext';
 
 function TimerPage({ route, navigation }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);                 // rename to isPlayingTimer
   const { steps, reset } = route.params;
   const { togglePlayback, isPlaying: isPlayingMusic } = useAudio(); // remane later to isPlayingMusic and toggleMusicPlayback
+  const { user } = useContext(LoginContext);
 
   const soundObject = new Audio.Sound();
   async function playSound() {
@@ -106,8 +109,40 @@ function TimerPage({ route, navigation }) {
       setCurrentStep(prev => prev + 1);
       return [true, 0];  // Reset timer immediately
     } else {
-      navigation.goBack();  // Go back to SetupPage
-      return [false, 0];  // Stop repeating the timer
+      // Check if user is logged in
+      if (user && user.email) {
+        // sessionData properties:
+        const holdDurations = steps
+          .filter(step => step.type === 'hold')
+          .map(step => step.duration);
+
+        const totalTime = steps
+          .reduce((acc, step) => acc + step.duration, 0)
+
+        const totalHoldTime = holdDurations.reduce((acc, duration) => acc + duration, 0);
+
+        const sessionData = {
+          holdDurations: holdDurations,
+          percentageHold: ((totalHoldTime / totalTime) * 100).toFixed(1) + '%',
+        };
+
+        console.log('LALALALLALA:', sessionData);
+
+        // Use the user's email or a unique identifier as the user ID
+        saveSessionBreathHolds(user.email, sessionData).then(() => {
+          // TODO: remove loadLatestSessions later
+          loadSessionBreathHolds(user.email, 2).then(sessions => {
+            console.log('Latest sessions:', (sessions));
+          });
+        }).catch(error => {
+          console.error('Error saving session:', error);
+        });
+      } else {
+        console.log('No user logged in, not saving session');
+      }
+
+      navigation.goBack(); // Go back to SetupPage
+      return [false, 0];   // Stop repeating the timer
     }
   };
 
@@ -131,7 +166,7 @@ function TimerPage({ route, navigation }) {
 
       <View style={styles.controlsContainer}>
         <Pressable style={styles.button} onPress={() => setIsPlaying(prev => !prev)}>
-          <Text style={styles.buttonText}>{isPlaying ? 'Play' : 'Pause'}</Text>
+          <Text style={styles.buttonText}>{isPlaying ? 'Pause' : 'Play'}</Text>
         </Pressable>
         <Pressable style={styles.button} onPress={togglePlayback}>
           <Text style={styles.buttonText}>{isPlayingMusic ? 'Pause Music' : 'Play Music'}</Text>
@@ -143,6 +178,12 @@ function TimerPage({ route, navigation }) {
           value={currentStep}
           onValueChange={(value) => setCurrentStep(value)}
           step={1}
+          onTouchStart={() => {
+            console.log("Touch Start"); // TODO: stop timer
+          }}
+          onSlidingComplete={() => {
+            console.log("Sliding Complete"); // TODO: start timer again and move to previous step set remaning to 0.1s
+          }}
         />
         <Text style={styles.stepText}>{`Step: ${currentStep + 1} / ${steps.length}`}</Text>
       </View>
