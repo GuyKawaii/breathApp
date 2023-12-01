@@ -7,6 +7,7 @@ import { AudioProvider } from './AudioContext';
 
 import SetupPage from "./SetupPage";
 import TimerPage from "./TimerPage";
+import AudioPage from "./AudioPage";
 
 const Tab = createBottomTabNavigator();
 
@@ -33,6 +34,7 @@ export default function App() {
             })}
           >
             <Tab.Screen name="SetupPage" component={SetupPage} />
+            <Tab.Screen name="AudioPage" component={AudioPage} />
             <Tab.Screen
               name="TimerPage"
               component={TimerPage}
