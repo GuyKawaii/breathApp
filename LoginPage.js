@@ -11,10 +11,11 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [chartData, setChartData] = useState(null);
   const screenWidth = Dimensions.get("window").width;
+  const chartColumns = 7;
 
   useEffect(() => {
     if (user && user.email) {
-      loadSessionBreathHoldMetrics(user.email, 10) // Assuming you want to fetch 10 records
+      loadSessionBreathHoldMetrics(user.email, chartColumns)
         .then(data => setChartData(data))
         .catch(error => console.error("Error fetching chart data:", error));
     }
@@ -22,7 +23,7 @@ const LoginPage = () => {
 
   const reloadChartData = () => {
     if (user && user.email) {
-      loadSessionBreathHoldMetrics(user.email, 10) // Assuming you want to fetch 10 records
+      loadSessionBreathHoldMetrics(user.email, chartColumns)
         .then(data => setChartData(data))
         .catch(error => console.error("Error reloading chart data:", error));
     }
