@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, Button } from "react-native";
+import { View, Text, StyleSheet, Button, Pressable } from "react-native";
 import { CountdownCircleTimer } from "react-native-countdown-circle-timer";
 import { Audio } from 'expo-av';
+import { useAudio } from './AudioContext';
+import Slider from '@react-native-community/slider';
 
 function TimerPage({ route, navigation }) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(true);                 // rename to isPlayingTimer
   const { steps, reset } = route.params;
+  const { togglePlayback, isPlaying: isPlayingMusic } = useAudio(); // remane later to isPlayingMusic and toggleMusicPlayback
 
   const soundObject = new Audio.Sound();
   async function playSound() {
@@ -111,7 +114,7 @@ function TimerPage({ route, navigation }) {
   return (
     <View style={styles.container}>
       <CountdownCircleTimer
-        key={currentStep}  // Reset timer when changing step
+        key={currentStep}
         isPlaying={isPlaying}
         duration={duration}
         colors={color}
@@ -120,15 +123,32 @@ function TimerPage({ route, navigation }) {
         updateInterval={0}
       >
         {({ remainingTime, color }) => (
-          <Text style={{ color, fontSize: 40 }}>
+          <Text style={[styles.timerText, { color }]}>
             {remainingTime}
           </Text>
         )}
       </CountdownCircleTimer>
-      <Button title="Toggle Playing" onPress={() => setIsPlaying(prev => !prev)} />
+
+      <View style={styles.controlsContainer}>
+        <Pressable style={styles.button} onPress={() => setIsPlaying(prev => !prev)}>
+          <Text style={styles.buttonText}>{isPlaying ? 'Play' : 'Pause'}</Text>
+        </Pressable>
+        <Pressable style={styles.button} onPress={togglePlayback}>
+          <Text style={styles.buttonText}>{isPlayingMusic ? 'Pause Music' : 'Play Music'}</Text>
+        </Pressable>
+        <Slider
+          style={styles.slider}
+          minimumValue={0}
+          maximumValue={steps.length - 1}
+          value={currentStep}
+          onValueChange={(value) => setCurrentStep(value)}
+          step={1}
+        />
+        <Text style={styles.stepText}>{`Step: ${currentStep + 1} / ${steps.length}`}</Text>
+      </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -136,7 +156,38 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#ecf0f1',
-    padding: 8,
+  },
+  button: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    width: 120,
+    borderRadius: 4,
+    margin: 12,
+    backgroundColor: 'green',
+  },
+  buttonText: {
+    fontSize: 16,
+    lineHeight: 21,
+    fontWeight: 'bold',
+    letterSpacing: 0.25,
+    color: 'white',
+  },
+  timerText: {
+    fontSize: 40,
+    fontWeight: 'bold',
+  },
+  controlsContainer: {
+    marginTop: 30,
+    alignItems: 'center',
+  },
+  slider: {
+    width: 300,
+    height: 40,
+  },
+  stepText: {
+    fontSize: 18,
+    marginTop: 10,
   },
 });
 
