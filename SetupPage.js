@@ -4,6 +4,9 @@ import DraggableFlatList from 'react-native-draggable-flatlist';
 import { Button } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAudio } from './AudioContext';
+import { saveState, loadState } from './StorageUtils';
+import { generateSteps } from './generateSteps';
+import { useEffect } from 'react';
 
 export default function SetupPage({ navigation }) {
   const [steps, setSteps] = useState([
@@ -13,27 +16,69 @@ export default function SetupPage({ navigation }) {
   const [breathInDuration, setBreathInDuration] = useState('1');
   const [breathOutDuration, setBreathOutDuration] = useState('1');
   const [numberOfBreaths, setNumberOfBreaths] = useState('1');
-  const [quickDuration, setQuickDuration] = useState('2');
+  const [quickInDuration, setQuickInDuration] = useState('2');
+  const [quickOutDuration, setQuickOutDuration] = useState('2');
   const [holdDuration, setHoldDuration] = useState('3');
   const { isPlaying, togglePlayback } = useAudio();
 
+  // useEffect(() => {
+  //   loadSetup();
+  // }, []);
+
+  const saveSetup = async () => {
+    await saveState('breathInDuration', breathInDuration);
+    await saveState('breathOutDuration', breathOutDuration);
+    await saveState('numberOfBreaths', numberOfBreaths);
+    await saveState('quickInDuration', quickInDuration);
+    await saveState('quickOutDuration', quickOutDuration);
+    await saveState('holdDuration', holdDuration);
+  };
+
+  // const loadSetup = async () => {
+  //   const loadedSteps = await loadState('steps');
+  //   if (loadedSteps !== null) {
+  //     setSteps(loadedSteps);
+  //   } else {
+  //     alert('No steps saved previously');
+  //   }
+  // };
+
   const addBreath = () => {
     const newKey = Date.now().toString();  // Generate a unique key using timestamp
-    const newItem = { key: newKey, label: `${numberOfBreaths} x Breath ${breathInDuration}s in, ${breathOutDuration}s out`, type: 'breathe', in: parseInt(breathInDuration), out: parseInt(breathOutDuration), numberOfBreaths: parseInt(numberOfBreaths) };
+    const newItem = { key: newKey, label: `${numberOfBreaths} x Breath ${breathInDuration}s in, ${breathOutDuration}s out`, type: 'breathe', in: parseFloat(breathInDuration), out: parseFloat(breathOutDuration), numberOfBreaths: parseFloat(numberOfBreaths) };
     setSteps([...steps, newItem]);
+    saveSetup();
   }
 
   const addQuick = () => {
     const newKey = Date.now().toString();  // Generate a unique key using timestamp
-    const newItem = { key: newKey, label: `Quick ${quickDuration}s`, type: 'quick', duration: parseInt(quickDuration, 10) };
+    const newItem = { key: newKey, label: `Quick ${quickInDuration}s in, ${quickOutDuration}s out`, type: 'quick', durationIn: parseFloat(quickInDuration), durationOut: parseFloat(quickOutDuration) };
     setSteps([...steps, newItem]);
+    saveSetup();
   }
 
   const addHold = () => {
     const newKey = Date.now().toString();  // Generate a unique key using timestamp
-    const newItem = { key: newKey, label: `Hold ${holdDuration}s`, type: 'hold', duration: parseInt(holdDuration, 10) };
+    const newItem = { key: newKey, label: `Hold ${holdDuration}s`, type: 'hold', duration: parseFloat(holdDuration) };
     setSteps([...steps, newItem]);
+    saveSetup();
   };
+
+  // add every type of breath including hold and quick
+  const addBlock = () => {
+    const newKey = Date.now().toString();
+    const newItem = {
+      key: newKey, label: `${numberOfBreaths}x(In:${breathInDuration}/Out:${breathOutDuration})-Qin:${quickInDuration}/Qout:${quickOutDuration}-Hold:${holdDuration}`, type: 'block',
+      numberOfBreaths: parseFloat(numberOfBreaths),
+      breathInDuration: parseFloat(breathInDuration),
+      breathOutDuration: parseFloat(breathOutDuration),
+      quickInDuration: parseFloat(quickInDuration),
+      quickOutDuration: parseFloat(quickOutDuration),
+      holdDuration: parseFloat(holdDuration),
+    };
+    setSteps([...steps, newItem]);
+    saveSetup();
+  }
 
   const deleteItemByKey = (key) => {
     const newData = steps.filter(item => item.key !== key);
@@ -89,6 +134,20 @@ export default function SetupPage({ navigation }) {
     }
   };
 
+  function navigateToTimerPage(steps) {
+    if (steps.length === 0) {
+      alert('Add at least one step');
+      return;
+    }
+
+    let atomicSteps = generateSteps(steps);
+
+    console.log(atomicSteps);
+
+    navigation.navigate('TimerPage', { steps: atomicSteps, allowed: true });
+    return atomicSteps;
+  }
+
 
   return (
     <View style={{ flex: 1 }}>
@@ -100,7 +159,7 @@ export default function SetupPage({ navigation }) {
           TextInput
           value={breathInDuration}
           onChangeText={setBreathInDuration}
-          placeholder="seconds for hold"
+          placeholder="seconds"
           style={styles.input}
         />
         <Text>Out: </Text>
@@ -109,7 +168,7 @@ export default function SetupPage({ navigation }) {
           TextInput
           value={breathOutDuration}
           onChangeText={setBreathOutDuration}
-          placeholder="seconds for hold"
+          placeholder="seconds"
           style={styles.input}
         />
         <Text>times: </Text>
@@ -125,13 +184,23 @@ export default function SetupPage({ navigation }) {
       </View>
 
       <View style={styles.inputContainer}>
-        <Text>Quick: </Text>
+        <Text>Quick </Text>
+        <Text>In: </Text>
         <TextInput
           keyboardType="number-pad"
           TextInput
-          value={quickDuration}
-          onChangeText={setQuickDuration}
-          placeholder="seconds for hold"
+          value={quickInDuration}
+          onChangeText={setQuickInDuration}
+          placeholder="seconds"
+          style={styles.input}
+        />
+        <Text>Out: </Text>
+        <TextInput
+          keyboardType="number-pad"
+          TextInput
+          value={quickOutDuration}
+          onChangeText={setQuickOutDuration}
+          placeholder="seconds"
           style={styles.input}
         />
         <Button onPress={addQuick}>Add</Button>
@@ -144,10 +213,13 @@ export default function SetupPage({ navigation }) {
           TextInput
           value={holdDuration}
           onChangeText={setHoldDuration}
-          placeholder="seconds for hold"
+          placeholder="seconds"
           style={styles.input}
         />
         <Button onPress={addHold}>Add</Button>
+      </View>
+      <View style={styles.buttonContainer}>
+        <Button onPress={addBlock}>Add block</Button>
       </View>
       <View style={{ flex: 1 }}>
         <DraggableFlatList
@@ -160,7 +232,7 @@ export default function SetupPage({ navigation }) {
       </View>
       {/* // view with flex 1 is to push the button to the bottom */}
       <View style={styles.horizontalBox}>
-        <Button onPress={() => navigateToTimerPage()}>START</Button>
+        <Button onPress={() => navigateToTimerPage(steps)}>START</Button>
         <Button onPress={() => loadSteps()}>LOAD</Button>
         <Button onPress={() => saveSteps(steps)}>SAVE</Button>
         <Button onPress={togglePlayback}>
@@ -169,59 +241,9 @@ export default function SetupPage({ navigation }) {
       </View>
     </View>
   );
-
-  // also creates the steps for the timer
-  function navigateToTimerPage() {
-    if (steps.length === 0) {
-      alert('Add at least one step');
-      return;
-    }
-
-    let splitSteps = [];
-
-    // padding start
-    splitSteps.push({ "type": "padding", "duration": 1 });
-
-    for (let i = 0; i < steps.length; i++) {
-      const step = steps[i];
-      switch (step.type) {
-        case 'breathe':
-          for (let j = 0; j < step.numberOfBreaths; j++) {
-            splitSteps.push({ "type": "breathe-in", "duration": step.in });
-            splitSteps.push({ "type": "breathe-out", "duration": step.out });
-          }
-          break;
-        case 'quick':
-          splitSteps.push({ "type": "quick-in", "duration": step.duration / 2 });
-          splitSteps.push({ "type": "quick-out", "duration": step.duration / 2 });
-          break;
-        default:
-          splitSteps.push(step);
-          break;
-      }
-
-      // Check if this step is of type 'hold' and the next step is also 'hold',
-      // then add a breathe-in in between them.
-      if (step.type === 'hold' && i + 1 < steps.length && steps[i + 1].type === 'hold') {
-        splitSteps.push({ "type": "breathe-in", "duration": 1 });
-      }
-    }
-
-    // If the last step is of type 'hold', add a padding step of type 'breathe-in'.
-    if (splitSteps[splitSteps.length - 1].type === 'hold') {
-      splitSteps.push({ "type": "breathe-in", "duration": 1 });
-    }
-
-    console.log(splitSteps);
-
-    // padding end
-    splitSteps.push({ "type": "complete", "duration": 1 });
-
-    navigation.navigate('TimerPage', { steps: splitSteps, allowed: true });
-  }
-
-
 }
+
+// 3x(In:1/Out:2)-Qin:2/Qout:3-Hold:3
 
 const styles = StyleSheet.create({
   itemContainer: {
@@ -248,6 +270,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 10,
     alignItems: 'center',
+  },
+  buttonContainer: {
+    flexDirection: 'column',
+    paddingBottom: 5,
   },
   input: {
     flex: 1,
