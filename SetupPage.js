@@ -13,12 +13,12 @@ export default function SetupPage({ navigation }) {
     { key: "1", label: `2 x Breath 1s in, 2s out`, type: 'breathe', in: 1, out: 2, numberOfBreaths: 2 }
   ]);
 
-  const [breathInDuration, setBreathInDuration] = useState('1');
-  const [breathOutDuration, setBreathOutDuration] = useState('1');
-  const [numberOfBreaths, setNumberOfBreaths] = useState('1');
+  const [breathInDuration, setBreathInDuration] = useState('4');
+  const [breathOutDuration, setBreathOutDuration] = useState('6');
+  const [numberOfBreaths, setNumberOfBreaths] = useState('3');
   const [quickInDuration, setQuickInDuration] = useState('2');
-  const [quickOutDuration, setQuickOutDuration] = useState('2');
-  const [holdDuration, setHoldDuration] = useState('3');
+  const [quickOutDuration, setQuickOutDuration] = useState('1');
+  const [holdDuration, setHoldDuration] = useState('30');
   const { isPlaying, togglePlayback } = useAudio();
 
   // useEffect(() => {
@@ -242,8 +242,6 @@ export default function SetupPage({ navigation }) {
     </View>
   );
 }
-
-// 3x(In:1/Out:2)-Qin:2/Qout:3-Hold:3
 
 const styles = StyleSheet.create({
   itemContainer: {

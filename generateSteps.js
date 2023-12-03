@@ -2,7 +2,7 @@ export function generateSteps(steps) {
   let splitSteps = [];
 
   // padding start
-  splitSteps.push({ "type": "padding", "duration": 1 });
+  splitSteps.push({ "type": "start", "duration": 1 });
 
   for (let i = 0; i < steps.length; i++) {
     const step = steps[i];

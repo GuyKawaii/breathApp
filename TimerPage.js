@@ -6,6 +6,7 @@ import { useAudio } from './AudioContext';
 import Slider from '@react-native-community/slider';
 import { saveSessionBreathHolds, loadSessionBreathHolds } from './FirebaseFuntions';
 import LoginContext from './LoginContext';
+import { Dimensions } from 'react-native';
 
 function TimerPage({ route, navigation }) {
   const [currentStep, setCurrentStep] = useState(0);
@@ -15,8 +16,15 @@ function TimerPage({ route, navigation }) {
   const { user } = useContext(LoginContext);
 
   const soundObject = new Audio.Sound();
-  async function playSound() {
-    const step = steps[currentStep + 1];
+  async function playSound(overrideStep = null) {
+    let step;
+
+    if (overrideStep !== null) {
+      step = steps[overrideStep];
+    } else {
+      step = steps[currentStep + 1];
+    }
+
 
     if (step === undefined) {
       return;
@@ -47,7 +55,7 @@ function TimerPage({ route, navigation }) {
         case 'complete':
           soundAsset = require('./assets/sound/complete.mp3');
           break;
-        case 'padding':
+        case 'start':
           return; // Early return
 
         default:
@@ -103,7 +111,7 @@ function TimerPage({ route, navigation }) {
   const { duration, color, colorsTime } = computeCurrentStep();
 
   const handleComplete = () => {
-    playSound(currentStep);
+    playSound();
 
     if (currentStep < steps.length - 1) {
       setCurrentStep(prev => prev + 1);
@@ -126,7 +134,6 @@ function TimerPage({ route, navigation }) {
           percentageHold: ((totalHoldTime / totalTime) * 100).toFixed(1) + '%',
         };
 
-        console.log('LALALALLALA:', sessionData);
 
         // Use the user's email or a unique identifier as the user ID
         saveSessionBreathHolds(user.email, sessionData).then(() => {
@@ -171,6 +178,8 @@ function TimerPage({ route, navigation }) {
         <Pressable style={styles.button} onPress={togglePlayback}>
           <Text style={styles.buttonText}>{isPlayingMusic ? 'Pause Music' : 'Play Music'}</Text>
         </Pressable>
+        <Text style={styles.stepText}>{`${currentStep + 1} / ${steps.length}`}</Text>
+        <Text style={styles.stepText}>{`${steps[currentStep].type}`}</Text>
         <Slider
           style={styles.slider}
           minimumValue={0}
@@ -179,13 +188,13 @@ function TimerPage({ route, navigation }) {
           onValueChange={(value) => setCurrentStep(value)}
           step={1}
           onTouchStart={() => {
-            console.log("Touch Start"); // TODO: stop timer
+            setIsPlaying(false);
           }}
           onSlidingComplete={() => {
-            console.log("Sliding Complete"); // TODO: start timer again and move to previous step set remaning to 0.1s
+            playSound(currentStep);
+            setIsPlaying(true);
           }}
         />
-        <Text style={styles.stepText}>{`Step: ${currentStep + 1} / ${steps.length}`}</Text>
       </View>
     </View>
   );
@@ -223,7 +232,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   slider: {
-    width: 300,
+    width: Dimensions.get('window').width - 20,
     height: 40,
   },
   stepText: {
