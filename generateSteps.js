@@ -18,12 +18,7 @@ export function generateSteps(steps) {
         splitSteps.push({ "type": "quick-out", "duration": step.durationOut });
         break;
       case 'block':
-        // numberOfBreaths: parseFloat(numberOfBreaths),
-        // breathInDuration: parseFloat(breathInDuration),
-        // breathOutDuration: parseFloat(breathOutDuration),
-        // quickInDuration: parseFloat(quickInDuration),
-        // holdDuration: parseFloat(holdDuration),
-        for (let j = 0; j < step.breathOutDuration; j++) {
+        for (let j = 0; j < step.numberOfBreaths; j++) {
           splitSteps.push({ "type": "breathe-in", "duration": step.breathInDuration });
           splitSteps.push({ "type": "breathe-out", "duration": step.breathOutDuration });
         }

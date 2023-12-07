@@ -24,21 +24,27 @@ export default function App() {
                 tabBarIcon: ({ focused, color, size }) => {
                   let iconName;
 
-                  if (route.name === 'SetupPage') {
+                  if (route.name === 'Session') {
                     iconName = focused ? 'ios-settings' : 'ios-settings-outline';
                   } else if (route.name === 'TimerPage') {
                     iconName = focused ? 'ios-timer' : 'ios-timer-outline';
+                  } else if (route.name === 'Audio') {
+                    iconName = focused ? 'ios-musical-notes' : 'ios-musical-notes-outline';
+                  } else if (route.name === 'Login') {
+                    iconName = focused ? 'ios-person' : 'ios-person-outline';
                   }
 
+                  // Return the icon component
                   return <Ionicons name={iconName} size={size} color={color} />;
                 },
                 tabBarInactiveTintColor: 'gray',
-                tabBarActiveTintColor: 'tomato',
+                tabBarActiveTintColor: 'black',
+                headerShown: false,
               })}
             >
-              <Tab.Screen name="SetupPage" component={SetupPage} />
-              <Tab.Screen name="AudioPage" component={AudioPage} />
-              <Tab.Screen name="LoginPage" component={LoginPage} />
+              <Tab.Screen name="Session" component={SetupPage} />
+              <Tab.Screen name="Audio" component={AudioPage} />
+              <Tab.Screen name="Login" component={LoginPage} />
               <Tab.Screen
                 name="TimerPage"
                 component={TimerPage}
@@ -54,3 +60,4 @@ export default function App() {
     </GestureHandlerRootView>
   );
 }
+

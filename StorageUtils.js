@@ -1,3 +1,4 @@
+// storageUtils.js
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const saveState = async (key, value) => {
