@@ -54,8 +54,8 @@ export default function App() {
                 name="TimerPage"
                 component={TimerPage}
                 options={{
-                  unmountOnBlur: true,
-                  tabBarButton: () => null   // Disable the button press but tab is still visible
+                  unmountOnBlur: true,     // reset the timer when navigating away
+                  tabBarButton: () => null // Disable the button press but tab is still visible
                 }}
               />
             </Tab.Navigator>
