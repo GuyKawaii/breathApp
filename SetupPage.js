@@ -82,30 +82,6 @@ export default function SetupPage({ navigation }) {
     setSteps(newData);
   };
 
-  const renderItem = ({ item, index, drag, isActive }) => {
-    const touchableStyle = isActive
-      ? [styles.renderItemTouchable, { backgroundColor: 'lightblue' }]
-      : styles.renderItemTouchable;
-
-    return (
-      <View style={styles.renderItem}>
-        <TouchableOpacity
-          style={touchableStyle}
-          onLongPress={drag}
-        >
-          <Text>{item.label}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.renderItemDelete}
-          onPress={() => deleteItemByKey(item.key)}
-        >
-          <Text style={styles.renderItemText}>Delete</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
-
   const saveSteps = async (steps) => {
     try {
       await AsyncStorage.setItem('steps', JSON.stringify(steps));
@@ -142,73 +118,104 @@ export default function SetupPage({ navigation }) {
     return atomicSteps;
   }
 
+  const renderItem = ({ item, index, drag, isActive }) => {
+    const touchableStyle = isActive
+      ? [styles.renderItemTouchable, { backgroundColor: 'lightblue' }]
+      : styles.renderItemTouchable;
+
+    return (
+      <View style={styles.renderItem}>
+        <TouchableOpacity
+          style={touchableStyle}
+          onLongPress={drag}
+        >
+          <Text>{item.label}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.renderItemDelete}
+          onPress={() => deleteItemByKey(item.key)}
+        >
+          <Text style={styles.renderItemText}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   return (
     <View style={{ flex: 1 }}>
-      <View style={styles.inputContainer}>
-        <Text>Breath: </Text>
-        <Text>In: </Text>
-        <TextInput
-          keyboardType="number-pad"
-          value={breathingSettings.breathInDuration}
-          onChangeText={(newVal) => setBreathingSettings(prevState => ({ ...prevState, breathInDuration: newVal }))}
-          placeholder="seconds"
-          style={styles.input}
-        />
-        <Text>Out: </Text>
-        <TextInput
-          keyboardType="number-pad"
-          value={breathingSettings.breathOutDuration}
-          onChangeText={(newVal) => setBreathingSettings(prevState => ({ ...prevState, breathOutDuration: newVal }))}
-          placeholder="seconds"
-          style={styles.input}
-        />
-        <Text>times: </Text>
-        <TextInput
-          keyboardType="number-pad"
-          value={breathingSettings.numberOfBreaths}
-          onChangeText={(newVal) => setBreathingSettings(prevState => ({ ...prevState, numberOfBreaths: newVal }))}
-          placeholder="breath"
-          style={styles.input}
-        />
+      <View style={styles.container}>
+        <View style={styles.containerLeft}>
+          <Text style={styles.inputType}>Breath:</Text>
+          <Text style={{ width: 10 }}>In</Text>
+          <TextInput
+            keyboardType="number-pad"
+            value={breathingSettings.breathInDuration}
+            onChangeText={(newVal) => setBreathingSettings(prevState => ({ ...prevState, breathInDuration: newVal }))}
+            placeholder="seconds"
+            style={styles.input}
+          />
+          <Text>Out</Text>
+          <TextInput
+            keyboardType="number-pad"
+            value={breathingSettings.breathOutDuration}
+            onChangeText={(newVal) => setBreathingSettings(prevState => ({ ...prevState, breathOutDuration: newVal }))}
+            placeholder="seconds"
+            style={styles.input}
+          />
+          <Text>Times</Text>
+          <TextInput
+            keyboardType="number-pad"
+            value={breathingSettings.numberOfBreaths}
+            onChangeText={(newVal) => setBreathingSettings(prevState => ({ ...prevState, numberOfBreaths: newVal }))}
+            placeholder="breaths"
+            style={styles.input}
+          />
+        </View>
         <Button onPress={addBreath}>Add</Button>
       </View>
 
-      <View style={styles.inputContainer}>
-        <Text>Quick </Text>
-        <Text>In: </Text>
-        <TextInput
-          keyboardType="number-pad"
-          value={breathingSettings.quickInDuration}
-          onChangeText={(newVal) => setBreathingSettings(prevState => ({ ...prevState, quickInDuration: newVal }))}
-          placeholder="seconds"
-          style={styles.input}
-        />
-        <Text>Out: </Text>
-        <TextInput
-          keyboardType="number-pad"
-          value={breathingSettings.quickOutDuration}
-          onChangeText={(newVal) => setBreathingSettings(prevState => ({ ...prevState, quickOutDuration: newVal }))}
-          placeholder="seconds"
-          style={styles.input}
-        />
+      <View style={styles.container}>
+        <View style={styles.containerLeft}>
+          <Text style={styles.inputType}>Quick:</Text>
+          <Text style={{ width: 10 }}>In</Text>
+          <TextInput
+            keyboardType="number-pad"
+            value={breathingSettings.quickInDuration}
+            onChangeText={(newVal) => setBreathingSettings(prevState => ({ ...prevState, quickInDuration: newVal }))}
+            placeholder="seconds"
+            style={styles.input}
+          />
+          <Text >Out</Text>
+          <TextInput
+            keyboardType="number-pad"
+            value={breathingSettings.quickOutDuration}
+            onChangeText={(newVal) => setBreathingSettings(prevState => ({ ...prevState, quickOutDuration: newVal }))}
+            placeholder="seconds"
+            style={styles.input}
+          />
+        </View>
         <Button onPress={addQuick}>Add</Button>
       </View>
 
-      <View style={styles.inputContainer}>
-        <Text>Hold: </Text>
-        <TextInput
-          keyboardType="number-pad"
-          value={breathingSettings.holdDuration}
-          onChangeText={(newVal) => setBreathingSettings(prevState => ({ ...prevState, holdDuration: newVal }))}
-          placeholder="seconds"
-          style={styles.input}
-        />
-        <Button onPress={addHold}>Add</Button>
+      <View style={styles.container}>
+        <View style={styles.containerLeft}>
+          <Text style={styles.inputType}>Hold:</Text>
+          <View style={{ width: 10 }} />
+          <TextInput
+            keyboardType="number-pad"
+            value={breathingSettings.holdDuration}
+            onChangeText={(newVal) => setBreathingSettings(prevState => ({ ...prevState, holdDuration: newVal }))}
+            placeholder="seconds"
+            style={styles.input}
+          />
+        </View>
+        <Button onPress={addQuick}>Add</Button>
       </View>
-      <View style={styles.buttonContainer}>
+
+      <View style={styles.blockContainer}>
         <Button onPress={addBlock}>Add block</Button>
       </View>
+
       <View style={{ flex: 1 }}>
         <DraggableFlatList
           contentContainerStyle={{ paddingHorizontal: 10 }}
@@ -229,17 +236,41 @@ export default function SetupPage({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  inputContainer: {
+  container: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 10,
-    backgroundColor: '#fff', // White background
-    borderWidth: 1,
-    borderColor: '#ddd', // Add this if you want a border
-    borderRadius: 10, // Rounded corners
-    marginVertical: 5,
+    backgroundColor: 'white',
+    marginBottom: 6,
   },
+  containerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'orage',
+    flex: 1,
+  },
+  inputType: {
+    width: 45,
+    textAlign: 'left',
+    marginLeft: 5,
+  },
+  input: {
+    borderWidth: 0,
+    borderColor: 'black',
+    backgroundColor: 'lightblue',
+    color: 'black',
+    marginHorizontal: 5,
+    width: 55,
+    borderRadius: 2,
+    paddingLeft: 5,
+
+  },
+
+  blockContainer: {
+    flexDirection: 'column',
+    paddingBottom: 5,
+  },
+
   horizontalBox: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -249,21 +280,7 @@ const styles = StyleSheet.create({
     padding: 5,
     marginVertical: 5,
   },
-  horizontalBoxButton: {
-    paddingHorizontal: 5,
-  },
-  buttonContainer: {
-    flexDirection: 'column',
-    paddingBottom: 5,
-  },
-  input: {
-    flex: 1,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
-    marginRight: 10,
-  },
+
   renderItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -287,7 +304,6 @@ const styles = StyleSheet.create({
   },
   renderItemText: {
     color: 'white',
-    // height: 30,
   },
 });
 
