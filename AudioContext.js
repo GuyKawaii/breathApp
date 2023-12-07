@@ -1,13 +1,10 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { Audio } from 'expo-av';
-
-// Static imports for tracks
-const track2 = require('./assets/music/aesthetic-boomopera.mp3');
-const track1 = require('./assets/music/forest-stream-birds-sound.mp3');
+import { saveState, loadState } from './StorageUtils';
 
 const tracks = {
-  'track1': track1,
-  'track2': track2,
+    'track1': require('./assets/music/sound-effects-library-forest-stream.mp3'),
+    'track2': require('./assets/music/late-nights-atmos-drake-background-melody.wav'),
 };
 
 const AudioContext = createContext();
@@ -21,6 +18,18 @@ export const AudioProvider = ({ children }) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTrack, setCurrentTrack] = useState('track1');
     const [volume, setVolumeState] = useState(1); // Default volume level
+
+    // default to last track played
+    useEffect(() => {
+        loadTrack();
+    }, []);
+
+    const loadTrack = async () => {
+        const track = await loadState('track');
+        if (track) {
+            setCurrentTrack(track);
+        }
+    };
 
     // Function to load and play a sound
     async function loadSound(trackName) {
@@ -37,6 +46,7 @@ export const AudioProvider = ({ children }) => {
 
     // Function to change the track
     async function changeTrack(trackName) {
+        saveState('track', trackName);
         setCurrentTrack(trackName);
         await loadSound(trackName);
     }

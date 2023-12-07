@@ -14,12 +14,12 @@ export default function SetupPage({ navigation }) {
   ]);
 
   const [breathingSettings, setBreathingSettings] = useState({
-    breathInDuration: '1',
-    breathOutDuration: '1',
-    numberOfBreaths: '1',
-    quickInDuration: '1',
-    quickOutDuration: '1',
-    holdDuration: '1',
+    breathInDuration: '4',
+    breathOutDuration: '6',
+    numberOfBreaths: '4',
+    quickInDuration: '3',
+    quickOutDuration: '2',
+    holdDuration: '30',
   });
   const { isPlaying, togglePlayback } = useAudio();
 
