@@ -7,7 +7,6 @@ import { useAudio } from './AudioContext';
 import { saveState, loadState } from './StorageUtils';
 import { generateSteps } from './generateSteps';
 import { useEffect } from 'react';
-import { RenderItemComponent } from './RenderItemComponent';
 
 export default function SetupPage({ navigation }) {
   const [steps, setSteps] = useState([
