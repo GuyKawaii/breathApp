@@ -7,6 +7,7 @@ import { useAudio } from './AudioContext';
 import { saveState, loadState } from './StorageUtils';
 import { generateSteps } from './generateSteps';
 import { useEffect } from 'react';
+import { RenderItemComponent } from './RenderItemComponent';
 
 export default function SetupPage({ navigation }) {
   const [steps, setSteps] = useState([
@@ -83,31 +84,28 @@ export default function SetupPage({ navigation }) {
   };
 
   const renderItem = ({ item, index, drag, isActive }) => {
+    const touchableStyle = isActive
+      ? [styles.renderItemTouchable, { backgroundColor: 'lightblue' }]
+      : styles.renderItemTouchable;
+
     return (
-      <View style={styles.itemContainer}>
+      <View style={styles.renderItem}>
         <TouchableOpacity
-          style={{
-            flex: 1,
-            height: 50,
-            backgroundColor: isActive ? 'lightblue' : 'white',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderTopWidth: 1,
-            borderColor: '#ddd',
-          }}
+          style={touchableStyle}
           onLongPress={drag}
         >
           <Text>{item.label}</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.deleteButton}
+          style={styles.renderItemDelete}
           onPress={() => deleteItemByKey(item.key)}
         >
-          <Text style={styles.deleteButtonText}>Delete</Text>
+          <Text style={styles.renderItemText}>Delete</Text>
         </TouchableOpacity>
       </View>
     );
   };
+
 
   const saveSteps = async (steps) => {
     try {
@@ -225,9 +223,6 @@ export default function SetupPage({ navigation }) {
         <Button onPress={() => navigateToTimerPage(steps)}>START</Button>
         <Button onPress={() => loadSteps()}>LOAD</Button>
         <Button onPress={() => saveSteps(steps)}>SAVE</Button>
-        <Button onPress={togglePlayback}>
-          {isPlaying ? "Pause Music" : "Play Music"}
-        </Button>
       </View>
     </View>
   );
@@ -235,30 +230,28 @@ export default function SetupPage({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  itemContainer: {
+  inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 10,
+    backgroundColor: '#fff', // White background
+    borderWidth: 1,
+    borderColor: '#ddd', // Add this if you want a border
+    borderRadius: 10, // Rounded corners
+    marginVertical: 5,
   },
   horizontalBox: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 10,
+    backgroundColor: 'white',
+    borderBlockColor: 'black',
+    padding: 5,
+    marginVertical: 5,
   },
-  deleteButton: {
-    backgroundColor: 'red',
-    width: 70,
-    height: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  deleteButtonText: {
-    color: 'white',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    padding: 10,
-    alignItems: 'center',
+  horizontalBoxButton: {
+    paddingHorizontal: 5,
   },
   buttonContainer: {
     flexDirection: 'column',
@@ -271,6 +264,31 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderRadius: 5,
     marginRight: 10,
+  },
+  renderItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 1,
+  },
+  renderItemTouchable: {
+    flex: 1,
+    height: 40,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderTopWidth: 1,
+    borderColor: '#ddd',
+  },
+  renderItemDelete: {
+    backgroundColor: 'lightcoral',
+    width: 70,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  renderItemText: {
+    color: 'white',
+    // height: 30,
   },
 });
 
