@@ -24,13 +24,14 @@ export default function App() {
                 tabBarIcon: ({ focused, color, size }) => {
                   let iconName;
 
+                  // Set the icon name based on the route name
                   if (route.name === 'Session') {
                     iconName = focused ? 'ios-settings' : 'ios-settings-outline';
                   } else if (route.name === 'TimerPage') {
                     iconName = focused ? 'ios-timer' : 'ios-timer-outline';
                   } else if (route.name === 'Audio') {
                     iconName = focused ? 'ios-musical-notes' : 'ios-musical-notes-outline';
-                  } else if (route.name === 'Login') {
+                  } else if (route.name === 'User') {
                     iconName = focused ? 'ios-person' : 'ios-person-outline';
                   }
 
@@ -39,12 +40,16 @@ export default function App() {
                 },
                 tabBarInactiveTintColor: 'gray',
                 tabBarActiveTintColor: 'black',
-                headerShown: false,
+                headerTitle: "",
+                headerStyle: {
+                  backgroundColor: 'black',
+                  height: 50,
+                },
               })}
             >
               <Tab.Screen name="Session" component={SetupPage} />
               <Tab.Screen name="Audio" component={AudioPage} />
-              <Tab.Screen name="Login" component={LoginPage} />
+              <Tab.Screen name="User" component={LoginPage} />
               <Tab.Screen
                 name="TimerPage"
                 component={TimerPage}
