@@ -7,6 +7,7 @@ import Slider from '@react-native-community/slider';
 import { saveSessionBreathHolds, loadSessionBreathHolds } from './FirebaseFuntions';
 import LoginContext from './LoginContext';
 import { Dimensions } from 'react-native';
+import { useKeepAwake } from 'expo-keep-awake'; // Prevent screen from sleeping
 
 function TimerPage({ route, navigation }) {
   const [currentStep, setCurrentStep] = useState(0);
@@ -16,6 +17,7 @@ function TimerPage({ route, navigation }) {
   const { user } = useContext(LoginContext);
 
   const soundObject = new Audio.Sound();
+
   async function playSound(overrideStep = null) {
     let step;
 
@@ -24,7 +26,6 @@ function TimerPage({ route, navigation }) {
     } else {
       step = steps[currentStep + 1];
     }
-
 
     if (step === undefined) {
       return;
@@ -97,13 +98,18 @@ function TimerPage({ route, navigation }) {
   const computeCurrentStep = () => {
     const step = steps[currentStep];
 
-    // TODO: Add special case for each step type
     switch (step.type) {
+      case 'hold':
+        return {
+          duration: step.duration,
+          color: ['#9B59B6', '#96d5ff'],
+          colorsTime: [step.duration, 0],
+        };
       default:
         return {
           duration: step.duration,
-          color: ["blue"],
-          colorsTime: [0],
+          color: ['#3498DB', '#2ECC71'],
+          colorsTime: [step.duration, 0],
         };
     }
   };
@@ -115,7 +121,7 @@ function TimerPage({ route, navigation }) {
 
     if (currentStep < steps.length - 1) {
       setCurrentStep(prev => prev + 1);
-      return [true, 0];  // Reset timer immediately
+      return [true, 0];  // Reset timer and repeat
     } else {
       // Check if user is logged in
       if (user && user.email) {
@@ -134,13 +140,7 @@ function TimerPage({ route, navigation }) {
           percentageHold: ((totalHoldTime / totalTime) * 100).toFixed(1) + '%',
         };
 
-
-        // Use the user's email or a unique identifier as the user ID
         saveSessionBreathHolds(user.email, sessionData).then(() => {
-          // TODO: remove loadLatestSessions later
-          loadSessionBreathHolds(user.email, 2).then(sessions => {
-            console.log('Latest sessions:', (sessions));
-          });
         }).catch(error => {
           console.error('Error saving session:', error);
         });
@@ -153,6 +153,7 @@ function TimerPage({ route, navigation }) {
     }
   };
 
+  useKeepAwake(); // Prevent screen from sleeping
   return (
     <View style={styles.container}>
       <CountdownCircleTimer
@@ -230,6 +231,8 @@ const styles = StyleSheet.create({
   controlsContainer: {
     marginTop: 30,
     alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 10,
   },
   slider: {
     width: Dimensions.get('window').width - 20,
