@@ -10,7 +10,7 @@ const AudioEditPage = () => {
   const tracks = [
     'track1',
     'track2',
-    // add tracks later
+    // potentially more tracks
   ];
 
   const handleTrackChange = (track) => {
@@ -24,16 +24,21 @@ const AudioEditPage = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Edit Audio</Text>
+      <Text style={styles.header}>Audio settings</Text>
 
-      <View style={styles.section}>
+      <View style={styles.backgroundSection}>
         <Text style={styles.subHeader}>Select Track</Text>
         {tracks.map(track => (
-          <Button key={track} title={track} onPress={() => handleTrackChange(track)} />
+          <View key={track} style={styles.buttonContainer}>
+            <Button
+              title={track}
+              onPress={() => handleTrackChange(track)}
+            />
+          </View>
         ))}
       </View>
 
-      <View style={styles.section}>
+      <View style={styles.backgroundSection}>
         <Text style={styles.subHeader}>Volume</Text>
         <Slider
           style={styles.slider}
@@ -41,12 +46,17 @@ const AudioEditPage = () => {
           onValueChange={handleVolumeChange}
           minimumValue={0}
           maximumValue={1}
-          step={0.1}
+          step={0.05}
+          minimumTrackTintColor="#007AFF" // Example track color
+          thumbTintColor="#007AFF" // Example thumb color
         />
       </View>
 
       <View style={styles.section}>
-        <Button title={isPlaying ? 'Pause' : 'Play'} onPress={togglePlayback} />
+        <Button
+          title={isPlaying ? 'Pause' : 'Play'}
+          onPress={togglePlayback}
+        />
       </View>
     </View>
   );
@@ -57,22 +67,39 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: 15,
   },
   section: {
-    marginVertical: 10,
+    // marginVertical: 15,
+    width: '100%',
+    alignItems: 'center',
+  },
+  backgroundSection: {
+    marginVertical: 15,
+    width: '100%',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 4,
   },
   header: {
-    fontSize: 24,
-    marginBottom: 20,
+    fontSize: 26,
+    fontWeight: 'bold',
   },
   subHeader: {
-    fontSize: 20,
-    marginBottom: 10,
+    fontWeight: 'bold',
+    fontSize: 22,
+    marginBottom: 15,
+    marginTop: 5,
+    color: '#444',
   },
   slider: {
-    width: 200,
+    width: '100%',
     height: 40,
+  },
+  buttonContainer: {
+    marginVertical: 5,
+    width: '90%',
+    paddingBottom: 15,
   },
 });
 

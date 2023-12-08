@@ -31,7 +31,6 @@ export const AudioProvider = ({ children }) => {
         }
     };
 
-    // Function to load and play a sound
     async function loadSound(trackName) {
         const track = tracks[trackName];
         const { sound } = await Audio.Sound.createAsync(track);
@@ -44,14 +43,12 @@ export const AudioProvider = ({ children }) => {
         setIsPlaying(true);
     }
 
-    // Function to change the track
     async function changeTrack(trackName) {
         saveState('track', trackName);
         setCurrentTrack(trackName);
         await loadSound(trackName);
     }
 
-    // Function to toggle playback
     async function togglePlayback() {
         if (!backgroundMusicObject) {
             await loadSound(currentTrack);
@@ -64,7 +61,6 @@ export const AudioProvider = ({ children }) => {
         }
     }
 
-    // Function to set the volume
     const setVolume = async (newVolume) => {
         setVolumeState(newVolume); // Update state
         if (backgroundMusicObject) {
