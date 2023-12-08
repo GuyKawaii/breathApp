@@ -32,7 +32,7 @@ const LoginPage = () => {
   if (!user) {
     // show login page
     return (
-      <View style={styles.container}>
+      <View style={styles.loginContainer}>
         <Text>Login</Text>
         <TextInput
           onChangeText={setEmail}
@@ -47,15 +47,18 @@ const LoginPage = () => {
           secureTextEntry
           style={styles.input}
         />
-        <Button
-          title="Login"
-          onPress={() => login(email, password)}
-        />
-        <Text>Sign up</Text>
-        <Button
-          title="Sign Up"
-          onPress={() => signup(email, password)}
-        />
+        <View style={styles.Button}>
+          <Button
+            title="Login"
+            onPress={() => login(email, password)}
+          />
+        </View>
+        <View style={styles.Button}>
+          <Button
+            title="Sign Up"
+            onPress={() => signup(email, password)}
+          />
+        </View>
       </View>
     );
   }
@@ -66,21 +69,54 @@ const LoginPage = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <Text>Welcome, {user.email}</Text>
-      <Button title="Log Out" onPress={logout} />
-      <BreathBarChart chartData={chartData} />
-      <Button title="Reload Data" onPress={reloadChartData} style={styles.reloadButton} />
+    <View style={styles.detailsContainer}>
+      <View style={styles.header}>
+        <Text>Welcome, {user.email}</Text>
+        <Button title="Log Out" onPress={logout} />
+      </View>
+
+      <View style={styles.chartSection}>
+        <Text style={styles.title}>Your Breath Hold Progress</Text>
+        <BreathBarChart chartData={chartData} />
+        <Button title="Reload Data" onPress={reloadChartData} />
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  loginContainer: {
     flex: 1,
-    backgroundColor: '#fff',
     alignItems: 'center',
+    justifyContent: 'center'
+  },
+  detailsContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
+  header: {
+    alignItems: 'space-between',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    padding: 10,
+    backgroundColor: 'white', // Light background for header
+  },
+  chartSection: {
+    flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    backgroundColor: 'white', // Light background for title
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
   },
   input: {
     borderWidth: 1,
@@ -89,7 +125,9 @@ const styles = StyleSheet.create({
     margin: 10,
     width: '80%',
   },
-  // Add any additional styles if needed
+  Button: {
+    margin: 10,
+  },
 });
 
 export default LoginPage;

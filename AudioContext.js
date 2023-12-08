@@ -4,7 +4,7 @@ import { saveState, loadState } from './StorageUtils';
 
 const tracks = {
     'track1': require('./assets/music/sound-effects-library-forest-stream.mp3'),
-    'track2': require('./assets/music/late-nights-atmos-drake-background-melody.wav'),
+    'track2': require('./assets/music/late-nights-atmos-drake-background-melody.aac'),
 };
 
 const AudioContext = createContext();

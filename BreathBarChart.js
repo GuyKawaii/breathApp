@@ -6,10 +6,8 @@ const BreathBarChart = ({ chartData }) => {
     const screenWidth = Dimensions.get("window").width;
 
     const graphStyle = {
-        marginVertical: 8,
-        borderRadius: 16,
+        borderRadius: 2,
         padding: 10,
-        backgroundColor: '#f5f7fa',
     };
 
     const chartConfig = {
