@@ -10,7 +10,6 @@ const AudioEditPage = () => {
   const tracks = [
     'track1',
     'track2',
-    // potentially more tracks
   ];
 
   const handleTrackChange = (track) => {
@@ -19,7 +18,7 @@ const AudioEditPage = () => {
 
   const handleVolumeChange = (value) => {
     setLocalVolume(value);
-    setVolume(value); // Assuming you have a setVolume method in your context
+    setVolume(value);
   };
 
   return (
@@ -47,8 +46,8 @@ const AudioEditPage = () => {
           minimumValue={0}
           maximumValue={1}
           step={0.05}
-          minimumTrackTintColor="#007AFF" // Example track color
-          thumbTintColor="#007AFF" // Example thumb color
+          minimumTrackTintColor="#007AFF"
+          thumbTintColor="#007AFF"
         />
       </View>
 

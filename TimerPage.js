@@ -11,9 +11,9 @@ import { useKeepAwake } from 'expo-keep-awake'; // Prevent screen from sleeping
 
 function TimerPage({ route, navigation }) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);                 // rename to isPlayingTimer
-  const { steps, reset } = route.params;
-  const { togglePlayback, isPlaying: isPlayingMusic } = useAudio(); // remane later to isPlayingMusic and toggleMusicPlayback
+  const [isPlaying, setIsPlaying] = useState(true);                 
+  const { steps } = route.params;
+  const { togglePlayback, isPlaying: isPlayingMusic } = useAudio();
   const { user } = useContext(LoginContext);
 
   const soundObject = new Audio.Sound();
@@ -74,16 +74,6 @@ function TimerPage({ route, navigation }) {
         // Load and play the sound
         await soundObject.loadAsync(soundAsset);
 
-        // // Set volume based on the type of sound
-        // switch (step.type) {
-        //   case 'complete':
-        //     await soundObject.setVolumeAsync(1); // 50% volume for 'complete' sound
-        //     break;
-        //   default:
-        //     await soundObject.setVolumeAsync(1);   // 100% volume for other sounds
-        //     break;
-        // }
-
         await soundObject.playAsync();
       } else {
         console.error("Sound asset not found for step type:", step.type);
@@ -122,8 +112,10 @@ function TimerPage({ route, navigation }) {
     if (currentStep < steps.length - 1) {
       setCurrentStep(prev => prev + 1);
       return [true, 0];  // Reset timer and repeat
+
+    // last step
     } else {
-      // Check if user is logged in
+      // Check user login
       if (user && user.email) {
         // sessionData properties:
         const holdDurations = steps

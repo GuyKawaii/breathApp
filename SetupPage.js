@@ -3,7 +3,6 @@ import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-nativ
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import { Button } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAudio } from './AudioContext';
 import { saveState, loadState } from './StorageUtils';
 import { generateSteps } from './generateSteps';
 import { useEffect } from 'react';
@@ -21,7 +20,6 @@ export default function SetupPage({ navigation }) {
     quickOutDuration: '2',
     holdDuration: '30',
   });
-  const { isPlaying, togglePlayback } = useAudio();
 
   useEffect(() => {
     loadSetup();
@@ -110,12 +108,11 @@ export default function SetupPage({ navigation }) {
       return;
     }
 
-    let atomicSteps = generateSteps(steps);
+    let microSteps = generateSteps(steps);
 
-    console.log(atomicSteps);
+    console.log(microSteps);
 
-    navigation.navigate('TimerPage', { steps: atomicSteps, allowed: true });
-    return atomicSteps;
+    navigation.navigate('TimerPage', { steps: microSteps });
   }
 
   const renderItem = ({ item, index, drag, isActive }) => {
@@ -146,7 +143,7 @@ export default function SetupPage({ navigation }) {
       <View style={styles.container}>
         <View style={styles.containerLeft}>
           <Text style={styles.inputType}>Breath:</Text>
-          <Text style={{ width: 10 }}>In</Text>
+          <Text style={{ width: 12 }}>In</Text>
           <TextInput
             keyboardType="number-pad"
             value={breathingSettings.breathInDuration}
@@ -177,7 +174,7 @@ export default function SetupPage({ navigation }) {
       <View style={styles.container}>
         <View style={styles.containerLeft}>
           <Text style={styles.inputType}>Quick:</Text>
-          <Text style={{ width: 10 }}>In</Text>
+          <Text style={{ width: 12 }}>In</Text>
           <TextInput
             keyboardType="number-pad"
             value={breathingSettings.quickInDuration}
@@ -209,7 +206,7 @@ export default function SetupPage({ navigation }) {
             style={styles.input}
           />
         </View>
-        <Button onPress={addQuick}>Add</Button>
+        <Button onPress={addHold}>Add</Button>
       </View>
 
       <View style={styles.blockContainer}>

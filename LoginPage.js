@@ -1,7 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { View, Button, TextInput, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import LoginContext from './LoginContext';
-import { Dimensions } from "react-native";
 import { loadSessionBreathHoldMetrics } from './FirebaseFuntions';
 import BreathBarChart from './BreathBarChart'; // Import the new component
 
@@ -10,7 +9,6 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [chartData, setChartData] = useState(null);
-  const screenWidth = Dimensions.get("window").width;
   const chartColumns = 7;
 
   useEffect(() => {

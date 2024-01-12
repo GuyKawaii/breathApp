@@ -43,7 +43,8 @@ export default function App() {
                 headerTitle: "",
                 headerStyle: {
                   backgroundColor: 'black',
-                  height: 50,
+                  height: 50, // enable for development
+                  // height: 0,  // disable for production
                 },
               })}
             >
@@ -55,7 +56,7 @@ export default function App() {
                 component={TimerPage}
                 options={{
                   unmountOnBlur: true,     // reset the timer when navigating away
-                  tabBarButton: () => null // Disable the button press but tab is still visible
+                  tabBarButton: () => null // Hide tab from navigation
                 }}
               />
             </Tab.Navigator>
