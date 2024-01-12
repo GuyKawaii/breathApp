@@ -35,11 +35,13 @@ export const LoginProvider = ({ children }) => {
         returnSecureToken: true
       });
       storeUserData({ email: email });
+      return response.data;
     } catch (error) {
-      alert("Login Failed: " + error.response.data.error.errors[0].message);
+      const errorMessage = error.response.data.error.errors[0].message;
+      alert("Login Failed: " + errorMessage);
     }
   };
-
+  
   const signup = async (email, password) => {
     try {
       const response = await axios.post(urlSignUp + API_KEY, {
@@ -48,10 +50,13 @@ export const LoginProvider = ({ children }) => {
         returnSecureToken: true
       });
       storeUserData({ email: email });
+      return response.data;
     } catch (error) {
-      alert("Signup Failed: " + error.response.data.error.errors[0].message);
+      const errorMessage = error.response.data.error.errors[0].message;
+      alert("Signup Failed: " + errorMessage);
     }
   };
+  
 
   const logout = async () => {
     await AsyncStorage.removeItem('user');
